@@ -1,7 +1,7 @@
 {
   "name": "spa-and-welfare-api",
   "version": "1.0.0",
-  "description": "API REST para Spay Bienestar - CRUD de tratamientos",
+  "description": "API REST para Spay Bienestar - Semana 03",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
