@@ -1,0 +1,13 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: spay-bienestar-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: spay_bienestar
+
+volumes:
+  mongo_data:

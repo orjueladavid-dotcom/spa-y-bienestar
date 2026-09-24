@@ -1,31 +1,30 @@
 {
-  "name": "spa-y-bienestar",
+  "name": "spay-bienestar-api",
   "version": "1.0.0",
-  "description": "API REST de Spay Bienestar — Semana 04: Validación, Errores y Logging",
-  "type": "module",
+  "description": "API REST de Spay Bienestar — Semana 06: MongoDB + Mongoose",
   "main": "dist/server.js",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js"
-  },
   "engines": {
     "node": ">=22.0.0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "seed": "tsx src/seed.ts"
+  },
   "dependencies": {
-    "express": "^5.1.0",
-    "morgan": "^1.10.0",
-    "winston": "^3.17.0",
-    "zod": "^3.24.0"
+    "dotenv": "16.4.7",
+    "express": "5.1.0",
+    "mongoose": "8.16.0",
+    "morgan": "1.10.0",
+    "winston": "3.17.0",
+    "zod": "3.25.67"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/morgan": "^1.9.9",
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.8.0"
+    "@types/express": "5.0.3",
+    "@types/morgan": "1.9.10",
+    "@types/node": "22.15.21",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3"
   }
 }

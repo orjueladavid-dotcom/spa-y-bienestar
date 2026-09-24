@@ -1,43 +1,25 @@
+// src/config/logger.ts — Winston + Morgan
+
 import winston from 'winston';
 import morgan from 'morgan';
-import type { StreamOptions } from 'morgan';
-
-const isProduction = process.env['NODE_ENV'] === 'production';
 
 export const logger = winston.createLogger({
-  level: isProduction ? 'warn' : 'http',
-  format: isProduction
-    ? winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      )
-    : winston.format.combine(
-        winston.format.colorize(),
-        winston.format.timestamp({ format: 'HH:mm:ss' }),
-        winston.format.printf(({ timestamp, level, message }) => {
-          return `${timestamp} ${level}: ${message}`;
-        }),
-      ),
-  transports: [
-    new winston.transports.Console(),
-    ...(isProduction
-      ? [
-          new winston.transports.File({
-            filename: 'logs/error.log',
-            level: 'error',
-          }),
-        ]
-      : []),
-  ],
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.printf(({ timestamp, level, message, stack }) => {
+      return `${timestamp} [${level}]: ${stack ?? message}`;
+    }),
+  ),
+  transports: [new winston.transports.Console()],
 });
 
-const stream: StreamOptions = {
-  write: (message: string) => {
-    logger.http(message.trim());
-  },
-};
-
 export const morganMiddleware = morgan(
-  isProduction ? 'combined' : 'dev',
-  { stream },
+  ':method :url :status :res[content-length] - :response-time ms',
+  {
+    stream: {
+      write: (message: string) => logger.http(message.trim()),
+    },
+  },
 );

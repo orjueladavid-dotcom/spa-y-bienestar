@@ -1,3 +1,5 @@
+// src/errors/AppError.ts — Error operacional con código HTTP
+
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
