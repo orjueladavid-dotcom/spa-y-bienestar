@@ -1,0 +1,7 @@
+# pnpm 11 ya no lee la sección "pnpm" de package.json: los ajustes van aquí.
+# allowBuilds autoriza los scripts de instalación que Prisma y esbuild (tsx) necesitan.
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
+  esbuild: true

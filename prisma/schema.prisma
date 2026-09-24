@@ -1,0 +1,36 @@
+// Prisma Schema — Spay Bienestar (Semana 05)
+// Recurso principal: Treatment (Tratamiento)
+// Recurso secundario: Category (Categoría) — relación 1:N (una categoría tiene muchos tratamientos)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String      @unique
+  description String?
+  treatments  Treatment[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Treatment {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique // @unique → permite demostrar P2002 (409)
+  description String?
+  price       Int // en pesos colombianos (COP)
+  duration    Int // en minutos
+  available   Boolean   @default(true)
+  categoryId  String?   @db.Uuid
+  category    Category? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+}
