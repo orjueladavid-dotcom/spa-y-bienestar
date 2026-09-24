@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "name": "Masaje relajante",
+    "category": "Masajes",
+    "price": 120000,
+    "duration": 60,
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Masaje descontracturante",
+    "category": "Masajes",
+    "price": 150000,
+    "duration": 60,
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Masaje con piedras calientes",
+    "category": "Masajes",
+    "price": 180000,
+    "duration": 75,
+    "available": true
+  },
+  {
+    "id": 4,
+    "name": "Limpieza facial profunda",
+    "category": "Faciales",
+    "price": 95000,
+    "duration": 75,
+    "available": true
+  },
+  {
+    "id": 5,
+    "name": "Facial antiedad",
+    "category": "Faciales",
+    "price": 180000,
+    "duration": 90,
+    "available": true
+  },
+  {
+    "id": 6,
+    "name": "Facial hidratante",
+    "category": "Faciales",
+    "price": 110000,
+    "duration": 60,
+    "available": false
+  },
+  {
+    "id": 7,
+    "name": "Exfoliación corporal",
+    "category": "Corporales",
+    "price": 110000,
+    "duration": 45,
+    "available": true
+  },
+  {
+    "id": 8,
+    "name": "Envoltura de algas",
+    "category": "Corporales",
+    "price": 140000,
+    "duration": 70,
+    "available": true
+  },
+  {
+    "id": 9,
+    "name": "Circuito de hidroterapia",
+    "category": "Hidroterapia",
+    "price": 85000,
+    "duration": 90,
+    "available": true
+  },
+  {
+    "id": 10,
+    "name": "Baño de vapor",
+    "category": "Hidroterapia",
+    "price": 60000,
+    "duration": 30,
+    "available": false
+  },
+  {
+    "id": 11,
+    "name": "Aromaterapia con lavanda",
+    "category": "Aromaterapia",
+    "price": 70000,
+    "duration": 40,
+    "available": true
+  },
+  {
+    "id": 12,
+    "name": "Aromaterapia con eucalipto",
+    "category": "Aromaterapia",
+    "price": 75000,
+    "duration": 45,
+    "available": true
+  }
+]

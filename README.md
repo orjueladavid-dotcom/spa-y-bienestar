@@ -1,75 +1,76 @@
-# 🌿 Spay Bienestar - Sistema de Gestión de Tratamientos
+# 🌿 Spay Bienestar — Semana 01: Node.js Fundamentals
 
-Este es un proyecto que hice para la clase de bc-expressjs.
-Es una herramienta de línea de comandos que lee datos de un centro de bienestar
-desde un archivo JSON y genera un reporte con la información.
+CLI de línea de comandos que lee los tratamientos de un centro de bienestar desde un archivo JSON, genera un resumen y permite filtrar por categoría.
 
----
+## 🎯 Dominio
 
-## 🎯 Mi Dominio: Spay Bienestar
+**Spay Bienestar** — centro de bienestar que ofrece tratamientos (masajes, faciales, corporales, hidroterapia y aromaterapia).
 
-El dominio que me asignaron fue **Spay Bienestar**, un centro de bienestar que ofrece diferentes tratamientos. Adapté el proyecto para trabajar con la entidad **Treatment** (Tratamiento).
-
----
+Entidad principal: **Treatment** (Tratamiento).
 
 ## ¿Qué hace?
 
-- Lee un archivo `treatments.json` con información de los tratamientos.
-- Muestra un resumen en la terminal: total de tratamientos, disponibles/no disponibles, precio promedio, el más caro y el más barato.
-- Permite filtrar los tratamientos por categoría usando `--category`.
-- Guarda un reporte en formato JSON dentro de la carpeta `output/`.
+- Lee `data/treatments.json`
+- Muestra resumen: total, disponibles/no disponibles, precio promedio, más caro y más barato
+- Filtra por categoría con `--category`
+- Guarda el reporte en `output/report.json`
 
----
+## Tecnologías
 
-## Tecnologías que usé
+- Node.js 22+
+- TypeScript (strict)
+- pnpm
+- fs/promises
+- commander
 
-- Node.js
-- TypeScript
-- pnpm (como gestor de paquetes)
-- fs/promises para leer y escribir archivos
-- commander para manejar argumentos de línea de comandos
-## Estructura del proyecto
-spa-and-welfare/
+## Estructura
+
+```
+spa-y-bienestar/
 ├── src/
-│ ├── index.ts # Punto de entrada
-│ ├── types.ts # Definiciones de tipos
-│ ├── fileManager.ts # Lectura/escritura de archivos
-│ └── dataProcessor.ts # Lógica de procesamiento
+│   ├── index.ts
+│   ├── types.ts
+│   ├── fileManager.ts
+│   └── dataProcessor.ts
 ├── data/
-│ └── treatments.json # Datos de tratamientos
+│   └── treatments.json
 ├── output/
-│ └── report.json # Reporte generado
-├── tsconfig.json # Configuración de TypeScript
-└── package.json # Configuración del proyecto
----
+│   └── report.json
+├── package.json
+└── tsconfig.json
+```
 
-## Entidades del Sistema
+## Cómo ejecutarlo
 
-### Treatment (Tratamiento)
+```bash
+pnpm install
+pnpm dev                          # todos los tratamientos
+pnpm dev -- --category Masajes    # filtrar por categoría
+pnpm build && pnpm start          # versión compilada
+```
 
-Cada tratamiento tiene los siguientes campos:
+## Ejemplo de salida
+
+```
+🌿 ===== Spay Bienestar — Resumen de Tratamientos =====
+
+📦 Total de tratamientos : 12
+✅ Disponibles           : 10
+❌ No disponibles        : 2
+💰 Precio promedio       : $114.583 COP
+🔝 Más caro              : Masaje con piedras calientes ($180.000)
+🔻 Más barato            : Baño de vapor ($60.000)
+```
+
+## Entidad Treatment
 
 ```typescript
 interface Treatment {
-  id: number;          
-  name: string;        
-  category: string;    
-  price: number;        
-  duration: number;     
-  available: boolean;   
+  id: number;
+  name: string;
+  category: string;
+  price: number;      // COP
+  duration: number;   // minutos
+  available: boolean;
 }
-
-interface Summary {
-  totalItems: number;             
-  activeItems: number;            
-  inactiveItems: number;          
-  averagePrice: number;            
-  mostExpensive: Treatment | null; 
-  cheapest: Treatment | null;      
-}
-
-interface Report {
-  summary: Summary;              
-  filteredItems: Treatment[];    
-  filterCategory?: string;       
-}
+```
