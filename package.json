@@ -1,30 +1,31 @@
 {
-  "name": "spa-and-welfare-api",
+  "name": "spa-y-bienestar",
   "version": "1.0.0",
-  "description": "API REST para Spay Bienestar - Semana 04",
+  "description": "API REST de Spay Bienestar — Semana 04: Validación, Errores y Logging",
+  "type": "module",
   "main": "dist/server.js",
   "scripts": {
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "dev": "nodemon --exec ts-node src/server.ts",
     "start": "node dist/server.js"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "keywords": [],
-  "author": "Tu Nombre",
+  "author": "",
   "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "morgan": "^1.10.0",
+    "winston": "^3.17.0",
+    "zod": "^3.24.0"
+  },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^20.0.0",
-    "@types/winston": "^2.4.4",
-    "nodemon": "^3.0.0",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^5.0.0",
-    "morgan": "^1.10.0",
-    "winston": "^3.17.0",
-    "zod": "^3.24.2"
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
   }
 }

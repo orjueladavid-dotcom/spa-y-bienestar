@@ -1,75 +1,92 @@
-# 🌿 Spay Bienestar - Sistema de Gestión de Tratamientos
+# 🌿 Spay Bienestar — Semana 04: Validación, Errores y Logging
 
-Este es un proyecto que hice para la clase de bc-expressjs.
-Es una herramienta de línea de comandos que lee datos de un centro de bienestar
-desde un archivo JSON y genera un reporte con la información.
+API REST con Express 5, TypeScript, **Zod**, **AppError**, **Winston** y **Morgan**.
 
----
+Arquitectura en capas: `routes → controllers → services → repositories`
 
-## 🎯 Mi Dominio: Spay Bienestar
+## 🎯 Dominio
 
-El dominio que me asignaron fue **Spay Bienestar**, un centro de bienestar que ofrece diferentes tratamientos. Adapté el proyecto para trabajar con la entidad **Treatment** (Tratamiento).
+**Spay Bienestar** — centro de bienestar.
 
----
+Entidad: **Treatment** (Tratamiento).
 
-## ¿Qué hace?
+## Validaciones Zod
 
-- Lee un archivo `treatments.json` con información de los tratamientos.
-- Muestra un resumen en la terminal: total de tratamientos, disponibles/no disponibles, precio promedio, el más caro y el más barato.
-- Permite filtrar los tratamientos por categoría usando `--category`.
-- Guarda un reporte en formato JSON dentro de la carpeta `output/`.
+| Campo | Regla |
+|-------|-------|
+| `name` | string, 3–120 caracteres |
+| `category` | string, mínimo 2 caracteres |
+| `price` | entero positivo (COP) |
+| `duration` | entero 5–480 (minutos) |
+| `available` | boolean opcional (default `true`) |
+| `:id` | número entero positivo |
+| `page` / `limit` | enteros positivos; limit ≤ 100 |
 
----
+## Endpoints
 
-## Tecnologías que usé
+| Método | Ruta | Status |
+|--------|------|--------|
+| GET | `/api/v1/treatments?page=1&limit=10` | 200 |
+| GET | `/api/v1/treatments/:id` | 200 / 400 / 404 |
+| POST | `/api/v1/treatments` | 201 / 400 |
+| PUT | `/api/v1/treatments/:id` | 200 / 400 / 404 |
+| DELETE | `/api/v1/treatments/:id` | 204 / 400 / 404 |
+| GET | `/health` | 200 |
 
-- Node.js
-- TypeScript
-- pnpm (como gestor de paquetes)
-- fs/promises para leer y escribir archivos
-- commander para manejar argumentos de línea de comandos
-## Estructura del proyecto
-spa-and-welfare/
-├── src/
-│ ├── index.ts # Punto de entrada
-│ ├── types.ts # Definiciones de tipos
-│ ├── fileManager.ts # Lectura/escritura de archivos
-│ └── dataProcessor.ts # Lógica de procesamiento
-├── data/
-│ └── treatments.json # Datos de tratamientos
-├── output/
-│ └── report.json # Reporte generado
-├── tsconfig.json # Configuración de TypeScript
-└── package.json # Configuración del proyecto
----
+### Respuestas de error
 
-## Entidades del Sistema
-
-### Treatment (Tratamiento)
-
-Cada tratamiento tiene los siguientes campos:
-
-```typescript
-interface Treatment {
-  id: number;          
-  name: string;        
-  category: string;    
-  price: number;        
-  duration: number;     
-  available: boolean;   
+```json
+// 400 validación Zod
+{
+  "status": "error",
+  "message": "Datos inválidos",
+  "issues": [{ "path": "price", "message": "El precio debe ser mayor a 0" }]
 }
 
-interface Summary {
-  totalItems: number;             
-  activeItems: number;            
-  inactiveItems: number;          
-  averagePrice: number;            
-  mostExpensive: Treatment | null; 
-  cheapest: Treatment | null;      
-}
+// 404
+{ "status": "error", "message": "Tratamiento 999 no encontrado" }
+```
 
-interface Report {
-  summary: Summary;              
-  filteredItems: Treatment[];    
-  filterCategory?: string;       
-}
+## Estructura
+
+```
+src/
+├── config/logger.ts
+├── errors/AppError.ts
+├── middlewares/
+│   ├── errorHandler.ts
+│   └── notFound.ts
+├── schemas/treatments.schema.ts
+├── repositories/treatments.repository.ts
+├── services/treatments.service.ts
+├── controllers/treatments.controller.ts
+├── routes/treatments.routes.ts
+├── types.ts
+├── app.ts
+└── server.ts
+```
+
+## Cómo ejecutarlo
+
+```bash
+pnpm install
+pnpm dev
+```
+
+## Ejemplos
+
+```bash
+# POST inválido → 400 con issues
+curl -X POST http://localhost:3000/api/v1/treatments \
+  -H "Content-Type: application/json" \
+  -d '{"name":"X","price":-10}'
+
+# GET id inexistente → 404
+curl http://localhost:3000/api/v1/treatments/999
+
+# GET id no numérico → 400
+curl http://localhost:3000/api/v1/treatments/abc
+
+# Ruta inexistente → 404 JSON
+curl http://localhost:3000/api/v1/otra-cosa
+```
