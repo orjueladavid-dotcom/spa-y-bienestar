@@ -14,13 +14,22 @@ async function seed() {
   await Category.deleteMany({});
   await User.deleteMany({});
 
-  console.log('👤 Creando usuario admin...');
-  const hashedPassword = await bcrypt.hash('Admin123!', 10);
+  console.log('👤 Creando usuarios...');
+  const adminHash = await bcrypt.hash('Admin123!', 10);
+  const userHash = await bcrypt.hash('User1234!', 10);
+
   const admin = await User.create({
     name: 'Admin Spay',
     email: 'admin@spaybienestar.com',
-    password: hashedPassword,
+    password: adminHash,
     role: 'admin',
+  });
+
+  await User.create({
+    name: 'Usuario Demo',
+    email: 'user@spaybienestar.com',
+    password: userHash,
+    role: 'user',
   });
 
   console.log('📂 Insertando categorías...');
@@ -108,7 +117,9 @@ async function seed() {
   ]);
 
   console.log(`✅ Seed completado:`);
-  console.log(`   👤 ${totalUsers} usuario(s) — email: admin@spaybienestar.com / password: Admin123!`);
+  console.log(`   👤 ${totalUsers} usuarios:`);
+  console.log(`      admin@spaybienestar.com / Admin123!  (admin)`);
+  console.log(`      user@spaybienestar.com  / User1234!  (user)`);
   console.log(`   📂 ${totalCategories} categorías`);
   console.log(`   💆 ${totalTreatments} tratamientos`);
 

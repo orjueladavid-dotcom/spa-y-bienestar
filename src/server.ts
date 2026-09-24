@@ -9,7 +9,7 @@ async function bootstrap() {
   await connectDB();
 
   const server = app.listen(PORT, () => {
-    logger.info(`🌿 Spay Bienestar API (JWT Auth) escuchando en http://localhost:${PORT}`);
+    logger.info(`🌿 Spay Bienestar API (RBAC + Security) en http://localhost:${PORT}`);
   });
 
   const shutdown = (signal: string) => {

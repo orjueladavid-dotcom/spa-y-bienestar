@@ -1,129 +1,97 @@
-# 🌿 Spay Bienestar — API REST (Semana 07: Autenticación JWT)
+# 🌿 Spay Bienestar — API REST (Semana 08: Autorización y Seguridad)
 
-Proyecto del bootcamp **bc-expressjs**. API REST para un centro de bienestar con **autenticación completa** (bcrypt + JWT access/refresh tokens + cookies HttpOnly).
+Proyecto del bootcamp **bc-expressjs**. API REST segura con **RBAC**, **Helmet**, **CORS**, **rate limiting** y **sanitización** contra NoSQL injection.
 
 ## 🎯 Dominio
 
-- **Dominio asignado:** Spay Bienestar
-- **Recurso principal:** `Treatment` (Tratamiento)
-- **Recurso secundario:** `Category` (Categoría)
-- **Usuario:** `User` (registro, login, roles)
+- **Dominio:** Spay Bienestar
+- **Recursos:** Treatment (principal), Category (secundaria), User (auth)
+- **Roles:** `user` | `admin`
 
-## 🔐 Autenticación
+## 🔐 Tabla de roles y permisos
 
-| Endpoint | Método | Descripción | Auth |
-|----------|--------|-------------|------|
-| `/api/v1/auth/register` | POST | Registro (hash bcrypt) | Público |
-| `/api/v1/auth/login` | POST | Login → cookies HttpOnly | Público |
-| `/api/v1/auth/me` | GET | Perfil del usuario | Protegido |
-| `/api/v1/auth/refresh` | POST | Renueva tokens (rotación) | Cookie refresh |
-| `/api/v1/auth/logout` | POST | Invalida refresh + limpia cookies | Protegido |
+| Acción | user | admin |
+|--------|------|-------|
+| Register / Login | ✅ | ✅ |
+| GET treatments / categories | ✅ | ✅ |
+| POST / PUT treatments / categories | ✅ | ✅ |
+| DELETE treatments / categories | ❌ | ✅ |
+| GET /auth/me | ✅ | ✅ |
+| Logout / Refresh | ✅ | ✅ |
 
-### Criterios de seguridad implementados
+## 🛡️ Capas de seguridad
 
-- ✅ Contraseñas hasheadas con bcrypt (salt rounds 10)
-- ✅ Secrets distintos (`JWT_ACCESS_SECRET` ≠ `JWT_REFRESH_SECRET`)
-- ✅ Tokens solo en cookies HttpOnly (nunca en body ni localStorage)
-- ✅ Refresh token hasheado en DB
-- ✅ Rotación de refresh token en cada `/refresh`
-- ✅ Rutas de recursos protegidas con `authMiddleware`
-- ✅ Prevención de user enumeration en registro
+| Capa | Tecnología | Qué protege |
+|------|------------|-------------|
+| Headers HTTP | **Helmet** | XSS, clickjacking, MIME sniffing, HSTS |
+| CORS | **cors** con whitelist | Orígenes no autorizados |
+| Rate limit general | **express-rate-limit** (200/15min) | Abuso de API |
+| Rate limit auth | **express-rate-limit** (20/15min) | Brute force en login/register |
+| Sanitización | **express-mongo-sanitize** | NoSQL injection (`$gt`, `$ne`…) |
+| Auth | JWT + cookies HttpOnly | Identidad |
+| Authz (RBAC) | `requireRole('admin')` | Permisos por rol |
 
-## 📊 Endpoints de recursos (protegidos)
+## 📊 Endpoints
 
-### Categories
+### Auth
 
-| Método | Ruta | Status |
+| Método | Ruta | Acceso |
 |--------|------|--------|
-| GET | `/api/v1/categories` | 200 |
-| GET | `/api/v1/categories/:id` | 200 / 400 / 404 |
-| POST | `/api/v1/categories` | 201 / 400 / 409 |
-| PUT | `/api/v1/categories/:id` | 200 / 400 / 404 / 409 |
-| DELETE | `/api/v1/categories/:id` | 204 / 400 / 404 |
+| POST | `/api/v1/auth/register` | Público (rate limit) |
+| POST | `/api/v1/auth/login` | Público (rate limit) |
+| GET | `/api/v1/auth/me` | Autenticado |
+| POST | `/api/v1/auth/refresh` | Cookie refresh |
+| POST | `/api/v1/auth/logout` | Autenticado |
 
-### Treatments
+### Categories / Treatments
 
-| Método | Ruta | Status |
+| Método | Ruta | Acceso |
 |--------|------|--------|
-| GET | `/api/v1/treatments?page=1&limit=10` | 200 |
-| GET | `/api/v1/treatments/:id` | 200 / 400 / 404 |
-| POST | `/api/v1/treatments` | 201 / 400 / 409 |
-| PUT | `/api/v1/treatments/:id` | 200 / 400 / 404 / 409 |
-| DELETE | `/api/v1/treatments/:id` | 204 / 400 / 404 |
+| GET | `/api/v1/categories` · `/treatments` | Autenticado |
+| GET | `.../:id` | Autenticado |
+| POST | `...` | Autenticado |
+| PUT | `.../:id` | Autenticado |
+| DELETE | `.../:id` | **Solo admin** |
 
 ## 🚀 Cómo ejecutarlo
 
 ```bash
-# 1. Levantar MongoDB
 docker compose up -d
-
-# 2. Instalar dependencias
 pnpm install
-
-# 3. Variables de entorno
 cp .env.example .env
-# (opcional) generar secrets reales:
-# openssl rand -base64 64
-
-# 4. Seed
 pnpm seed
-
-# 5. Servidor
 pnpm dev
 ```
 
-**Usuario demo del seed:**
-- Email: `admin@spaybienestar.com`
-- Password: `Admin123!`
+**Usuarios del seed:**
+| Email | Password | Rol |
+|-------|----------|-----|
+| `admin@spaybienestar.com` | `Admin123!` | admin |
+| (puedes registrar más con POST /auth/register) | | user |
 
-## 🧪 Flujo de prueba (Postman / Thunder Client)
+## 🧪 Pruebas de seguridad
 
-1. **Register** o **Login** → ver cookies `accessToken` y `refreshToken` (HttpOnly)
-2. **GET /auth/me** → perfil del usuario
-3. **CRUD de treatments/categories** (las cookies se envían automáticamente)
-4. **POST /auth/refresh** → nuevos tokens (rotación)
-5. **POST /auth/logout** → cookies limpiadas
-6. Intentar CRUD sin cookie → **401**
+1. **Headers Helmet** — inspeccionar respuesta de cualquier endpoint:
+   - `X-Content-Type-Options: nosniff`
+   - `X-Frame-Options: SAMEORIGIN`
+   - `Content-Security-Policy: ...`
 
-### Ejemplo Register
+2. **Rate limit auth** — hacer >20 POST `/auth/login` en 15 min → **429**
 
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"David","email":"david@test.com","password":"Password123"}' \
-  -c cookies.txt
-```
+3. **RBAC**:
+   - Login como `user` → DELETE treatment → **403**
+   - Login como `admin` → DELETE treatment → **204**
+   - Sin cookie → cualquier ruta protegida → **401**
 
-### Ejemplo Login
+4. **CORS** — request desde origen no listado en `CORS_ORIGINS` → bloqueado
 
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@spaybienestar.com","password":"Admin123!"}' \
-  -c cookies.txt
-```
-
-### Ejemplo recurso protegido
-
-```bash
-curl http://localhost:3000/api/v1/treatments \
-  -b cookies.txt
-```
-
-## 🧱 Arquitectura
-
-```
-routes → controllers → services → repositories → Mongoose
-```
-
-- Auth: `auth.routes` → `auth.controller` → `auth.service` → `user.repository`
-- Treatments / Categories: protegidos con `authMiddleware`
+5. **NoSQL injection** — body con `{ "email": { "$gt": "" } }` → sanitizado, no funciona
 
 ## 📸 Capturas requeridas
 
-- Register exitoso
-- Login con cookies en la respuesta
-- CRUD completo de treatments (5 operaciones)
-- Acceso sin token → 401
-- Refresh exitoso → nuevo cookie
-- Logout y refresh posterior → 401
+- Header `X-Content-Type-Options: nosniff`
+- 429 al superar rate limit en auth
+- 401 sin token
+- 403 con rol `user` en DELETE
+- 200/204 con rol `admin` en DELETE
+- CRUD completo de treatments

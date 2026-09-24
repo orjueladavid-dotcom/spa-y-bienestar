@@ -20,7 +20,3 @@ export async function disconnectDB(): Promise<void> {
   await mongoose.disconnect();
   logger.info('MongoDB desconectado');
 }
-
-mongoose.connection.on('disconnected', () => {
-  logger.warn('MongoDB desconectado');
-});

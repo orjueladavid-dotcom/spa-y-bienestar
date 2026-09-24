@@ -1,16 +1,18 @@
 import { Router } from 'express';
 import * as treatmentController from '../controllers/treatment.controller.js';
-import { authMiddleware } from '../middlewares/auth.middleware.js';
+import { authMiddleware, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Todas las rutas de tratamientos requieren autenticación
-router.use(authMiddleware);
+// Lectura: cualquier usuario autenticado
+router.get('/', authMiddleware, treatmentController.getAll);
+router.get('/:id', authMiddleware, treatmentController.getById);
 
-router.get('/', treatmentController.getAll);
-router.get('/:id', treatmentController.getById);
-router.post('/', treatmentController.create);
-router.put('/:id', treatmentController.update);
-router.delete('/:id', treatmentController.remove);
+// Crear / actualizar: autenticado
+router.post('/', authMiddleware, treatmentController.create);
+router.put('/:id', authMiddleware, treatmentController.update);
+
+// Eliminar: solo admin
+router.delete('/:id', authMiddleware, requireRole('admin'), treatmentController.remove);
 
 export default router;

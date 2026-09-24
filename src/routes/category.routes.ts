@@ -1,16 +1,18 @@
 import { Router } from 'express';
 import * as categoryController from '../controllers/category.controller.js';
-import { authMiddleware } from '../middlewares/auth.middleware.js';
+import { authMiddleware, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Todas las rutas de categorías requieren autenticación
-router.use(authMiddleware);
+// Lectura: cualquier usuario autenticado
+router.get('/', authMiddleware, categoryController.getAll);
+router.get('/:id', authMiddleware, categoryController.getById);
 
-router.get('/', categoryController.getAll);
-router.get('/:id', categoryController.getById);
-router.post('/', categoryController.create);
-router.put('/:id', categoryController.update);
-router.delete('/:id', categoryController.remove);
+// Escritura: autenticado
+router.post('/', authMiddleware, categoryController.create);
+router.put('/:id', authMiddleware, categoryController.update);
+
+// Eliminar: solo admin
+router.delete('/:id', authMiddleware, requireRole('admin'), categoryController.remove);
 
 export default router;
