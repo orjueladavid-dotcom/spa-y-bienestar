@@ -1,5 +1,3 @@
-// src/middlewares/notFound.ts
-
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/AppError.js';
 

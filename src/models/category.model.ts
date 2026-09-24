@@ -1,5 +1,3 @@
-// src/models/category.model.ts — Entidad secundaria (sin referencias)
-
 import { Schema, model, Document } from 'mongoose';
 
 export interface ICategory extends Document {

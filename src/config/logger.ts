@@ -1,5 +1,3 @@
-// src/config/logger.ts — Winston + Morgan
-
 import winston from 'winston';
 import morgan from 'morgan';
 

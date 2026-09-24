@@ -1,45 +1,57 @@
-# 🌿 Spay Bienestar — API REST (Semana 06: MongoDB + Mongoose)
+# 🌿 Spay Bienestar — API REST (Semana 07: Autenticación JWT)
 
-Proyecto del bootcamp **bc-expressjs**. API REST para un centro de bienestar que gestiona **tratamientos** organizados por **categorías**. Semana 06: se usa **MongoDB con Mongoose** (en lugar de Prisma/PostgreSQL).
+Proyecto del bootcamp **bc-expressjs**. API REST para un centro de bienestar con **autenticación completa** (bcrypt + JWT access/refresh tokens + cookies HttpOnly).
 
 ## 🎯 Dominio
 
 - **Dominio asignado:** Spay Bienestar
 - **Recurso principal:** `Treatment` (Tratamiento)
-- **Recurso secundario:** `Category` (Categoría) — relación por referencia (`ObjectId`) + `populate()`
+- **Recurso secundario:** `Category` (Categoría)
+- **Usuario:** `User` (registro, login, roles)
 
-## 🗂️ Diagrama de entidades
+## 🔐 Autenticación
 
-```
-┌──────────────────┐                    ┌────────────────────────┐
-│     Category     │                    │       Treatment        │
-├──────────────────┤                    ├────────────────────────┤
-│ _id (ObjectId)   │◄───────────────────│ category (ObjectId)    │
-│ name (unique)    │      ref +         │ name (unique)          │
-│ description?     │      populate()    │ description?           │
-│ createdAt        │                    │ price (Number, COP)    │
-│ updatedAt        │                    │ duration (Number, min) │
-└──────────────────┘                    │ available (Boolean)    │
-                                        │ createdAt / updatedAt  │
-                                        └────────────────────────┘
-```
+| Endpoint | Método | Descripción | Auth |
+|----------|--------|-------------|------|
+| `/api/v1/auth/register` | POST | Registro (hash bcrypt) | Público |
+| `/api/v1/auth/login` | POST | Login → cookies HttpOnly | Público |
+| `/api/v1/auth/me` | GET | Perfil del usuario | Protegido |
+| `/api/v1/auth/refresh` | POST | Renueva tokens (rotación) | Cookie refresh |
+| `/api/v1/auth/logout` | POST | Invalida refresh + limpia cookies | Protegido |
 
-## 🧱 Arquitectura en capas
+### Criterios de seguridad implementados
 
-`routes → controllers → services → repositories → Mongoose`
+- ✅ Contraseñas hasheadas con bcrypt (salt rounds 10)
+- ✅ Secrets distintos (`JWT_ACCESS_SECRET` ≠ `JWT_REFRESH_SECRET`)
+- ✅ Tokens solo en cookies HttpOnly (nunca en body ni localStorage)
+- ✅ Refresh token hasheado en DB
+- ✅ Rotación de refresh token en cada `/refresh`
+- ✅ Rutas de recursos protegidas con `authMiddleware`
+- ✅ Prevención de user enumeration en registro
 
-| Capa | Responsabilidad |
-|------|-----------------|
-| routes | Define los endpoints |
-| controllers | HTTP: valida con Zod y responde; errores a `next(err)` |
-| services | Lógica de negocio (`AppError 404` si no existe) |
-| repositories | Mongoose + traducción de errores (`11000`, `CastError`) |
+## 📊 Endpoints de recursos (protegidos)
 
-Transversal: `AppError`, `errorHandler` (4 parámetros), `notFound`, logger Winston + Morgan.
+### Categories
+
+| Método | Ruta | Status |
+|--------|------|--------|
+| GET | `/api/v1/categories` | 200 |
+| GET | `/api/v1/categories/:id` | 200 / 400 / 404 |
+| POST | `/api/v1/categories` | 201 / 400 / 409 |
+| PUT | `/api/v1/categories/:id` | 200 / 400 / 404 / 409 |
+| DELETE | `/api/v1/categories/:id` | 204 / 400 / 404 |
+
+### Treatments
+
+| Método | Ruta | Status |
+|--------|------|--------|
+| GET | `/api/v1/treatments?page=1&limit=10` | 200 |
+| GET | `/api/v1/treatments/:id` | 200 / 400 / 404 |
+| POST | `/api/v1/treatments` | 201 / 400 / 409 |
+| PUT | `/api/v1/treatments/:id` | 200 / 400 / 404 / 409 |
+| DELETE | `/api/v1/treatments/:id` | 204 / 400 / 404 |
 
 ## 🚀 Cómo ejecutarlo
-
-Requisitos: Node ≥ 22, pnpm, Docker.
 
 ```bash
 # 1. Levantar MongoDB
@@ -50,96 +62,68 @@ pnpm install
 
 # 3. Variables de entorno
 cp .env.example .env
+# (opcional) generar secrets reales:
+# openssl rand -base64 64
 
-# 4. Seed (limpia e inserta datos demo)
+# 4. Seed
 pnpm seed
 
-# 5. Servidor en desarrollo
+# 5. Servidor
 pnpm dev
 ```
 
-Servidor en `http://localhost:3000`.
+**Usuario demo del seed:**
+- Email: `admin@spaybienestar.com`
+- Password: `Admin123!`
 
-## 📊 Endpoints
+## 🧪 Flujo de prueba (Postman / Thunder Client)
 
-### Categories (secundaria)
+1. **Register** o **Login** → ver cookies `accessToken` y `refreshToken` (HttpOnly)
+2. **GET /auth/me** → perfil del usuario
+3. **CRUD de treatments/categories** (las cookies se envían automáticamente)
+4. **POST /auth/refresh** → nuevos tokens (rotación)
+5. **POST /auth/logout** → cookies limpiadas
+6. Intentar CRUD sin cookie → **401**
 
-| Método | Ruta | Descripción | Status |
-|--------|------|-------------|--------|
-| GET | `/api/v1/categories` | Listar todas | 200 |
-| GET | `/api/v1/categories/:id` | Obtener por ID | 200 / 400 / 404 |
-| POST | `/api/v1/categories` | Crear | 201 / 400 / 409 |
-| PUT | `/api/v1/categories/:id` | Actualizar | 200 / 400 / 404 / 409 |
-| DELETE | `/api/v1/categories/:id` | Eliminar | 204 / 400 / 404 |
-
-### Treatments (principal — con populate)
-
-| Método | Ruta | Descripción | Status |
-|--------|------|-------------|--------|
-| GET | `/api/v1/treatments?page=1&limit=10` | Listado paginado + populate | 200 / 400 |
-| GET | `/api/v1/treatments/:id` | Detalle con categoría | 200 / 400 / 404 |
-| POST | `/api/v1/treatments` | Crear | 201 / 400 / 409 |
-| PUT | `/api/v1/treatments/:id` | Actualizar | 200 / 400 / 404 / 409 |
-| DELETE | `/api/v1/treatments/:id` | Eliminar | 204 / 400 / 404 |
-| GET | `/health` | Estado del servidor | 200 |
-
-### Validaciones (Zod)
-
-| Campo | Regla |
-|-------|-------|
-| `name` (Treatment) | string, 3–120 caracteres, único |
-| `description` | string ≤ 500, opcional |
-| `price` | entero > 0 (COP) |
-| `duration` | entero 5–480 (minutos) |
-| `available` | boolean, opcional (default `true`) |
-| `category` | ObjectId válido (24 hex) |
-| `:id` | ObjectId válido |
-| `page` / `limit` | enteros positivos; `limit` ≤ 100 |
-
-### Ejemplo de respuesta (GET /api/v1/treatments)
-
-```json
-{
-  "data": [
-    {
-      "_id": "66f1a2b3c4d5e6f7a8b9c0d1",
-      "name": "Masaje relajante",
-      "description": "Masaje de cuerpo completo para liberar tensión",
-      "price": 120000,
-      "duration": 60,
-      "available": true,
-      "category": {
-        "_id": "66f1a2b3c4d5e6f7a8b9c0d0",
-        "name": "Masajes",
-        "description": "Masajes terapéuticos y de relajación"
-      },
-      "createdAt": "2026-09-24T00:00:00.000Z",
-      "updatedAt": "2026-09-24T00:00:00.000Z"
-    }
-  ],
-  "total": 7,
-  "page": 1,
-  "limit": 10,
-  "totalPages": 1
-}
-```
-
-### Mapeo de errores de MongoDB
-
-| Código / Error | Significado | Respuesta |
-|----------------|-------------|-----------|
-| `11000` | Violación de unicidad | `409` |
-| `CastError` | ObjectId inválido | `400` |
-| `null` (findById) | Registro no encontrado | `404` |
-
-## 🌱 Seed
+### Ejemplo Register
 
 ```bash
-pnpm seed
+curl -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"David","email":"david@test.com","password":"Password123"}' \
+  -c cookies.txt
 ```
 
-Inserta 5 categorías y 7 tratamientos. Al re-ejecutar limpia las colecciones primero.
+### Ejemplo Login
 
-## 📸 Capturas
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@spaybienestar.com","password":"Admin123!"}' \
+  -c cookies.txt
+```
 
-> Agrega aquí (o en `docs/`) las capturas de Postman / Thunder Client de los endpoints y de los errores (400, 404, 409).
+### Ejemplo recurso protegido
+
+```bash
+curl http://localhost:3000/api/v1/treatments \
+  -b cookies.txt
+```
+
+## 🧱 Arquitectura
+
+```
+routes → controllers → services → repositories → Mongoose
+```
+
+- Auth: `auth.routes` → `auth.controller` → `auth.service` → `user.repository`
+- Treatments / Categories: protegidos con `authMiddleware`
+
+## 📸 Capturas requeridas
+
+- Register exitoso
+- Login con cookies en la respuesta
+- CRUD completo de treatments (5 operaciones)
+- Acceso sin token → 401
+- Refresh exitoso → nuevo cookie
+- Logout y refresh posterior → 401

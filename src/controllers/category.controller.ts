@@ -1,5 +1,3 @@
-// src/controllers/category.controller.ts
-
 import { Request, Response, NextFunction } from 'express';
 import * as categoryService from '../services/category.service.js';
 import {

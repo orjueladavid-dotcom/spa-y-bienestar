@@ -1,5 +1,3 @@
-// src/schemas/category.schema.ts — Validación Zod para Category
-
 import { z } from 'zod';
 
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;

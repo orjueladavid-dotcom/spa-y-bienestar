@@ -1,5 +1,3 @@
-// src/repositories/treatment.repository.ts — Acceso a datos Treatment + populate
-
 import { Treatment } from '../models/treatment.model.js';
 import { AppError } from '../errors/AppError.js';
 import type { CreateTreatmentDto, UpdateTreatmentDto } from '../schemas/treatment.schema.js';
@@ -20,6 +18,7 @@ export async function findAll(page: number, limit: number) {
   const [data, total] = await Promise.all([
     Treatment.find()
       .populate('category', 'name description')
+      .populate('createdBy', 'name email')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -28,25 +27,27 @@ export async function findAll(page: number, limit: number) {
   ]);
 
   const totalPages = Math.ceil(total / limit) || 1;
-
   return { data, total, page, limit, totalPages };
 }
 
 export async function findById(id: string) {
   try {
-    const treatment = await Treatment.findById(id)
+    return await Treatment.findById(id)
       .populate('category', 'name description')
+      .populate('createdBy', 'name email')
       .lean();
-    return treatment;
   } catch (err) {
     return mapMongoError(err);
   }
 }
 
-export async function create(data: CreateTreatmentDto) {
+export async function create(data: CreateTreatmentDto & { createdBy?: string }) {
   try {
     const treatment = await Treatment.create(data);
-    return treatment.populate('category', 'name description');
+    return treatment.populate([
+      { path: 'category', select: 'name description' },
+      { path: 'createdBy', select: 'name email' },
+    ]);
   } catch (err) {
     return mapMongoError(err);
   }
@@ -54,13 +55,13 @@ export async function create(data: CreateTreatmentDto) {
 
 export async function update(id: string, data: UpdateTreatmentDto) {
   try {
-    const treatment = await Treatment.findByIdAndUpdate(id, data, {
+    return await Treatment.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     })
       .populate('category', 'name description')
+      .populate('createdBy', 'name email')
       .lean();
-    return treatment;
   } catch (err) {
     return mapMongoError(err);
   }

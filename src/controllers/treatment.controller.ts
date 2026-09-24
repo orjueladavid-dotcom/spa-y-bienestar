@@ -1,5 +1,3 @@
-// src/controllers/treatment.controller.ts
-
 import { Request, Response, NextFunction } from 'express';
 import * as treatmentService from '../services/treatment.service.js';
 import {
@@ -8,6 +6,7 @@ import {
   treatmentIdSchema,
   paginationSchema,
 } from '../schemas/treatment.schema.js';
+import { AppError } from '../errors/AppError.js';
 
 export async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
@@ -31,8 +30,11 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
 
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!req.user) {
+      throw new AppError(401, 'No autenticado');
+    }
     const body = createTreatmentSchema.parse(req.body);
-    const data = await treatmentService.create(body);
+    const data = await treatmentService.create(body, req.user.id);
     res.status(201).json({ data });
   } catch (err) {
     next(err);

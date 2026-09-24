@@ -1,5 +1,3 @@
-// src/server.ts — Entry point + graceful shutdown
-
 import 'dotenv/config';
 import { app } from './app.js';
 import { connectDB } from './lib/mongoose.js';
@@ -11,7 +9,7 @@ async function bootstrap() {
   await connectDB();
 
   const server = app.listen(PORT, () => {
-    logger.info(`🌿 Spay Bienestar API escuchando en http://localhost:${PORT}`);
+    logger.info(`🌿 Spay Bienestar API (JWT Auth) escuchando en http://localhost:${PORT}`);
   });
 
   const shutdown = (signal: string) => {

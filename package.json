@@ -1,7 +1,7 @@
 {
   "name": "spay-bienestar-api",
   "version": "1.0.0",
-  "description": "API REST de Spay Bienestar — Semana 06: MongoDB + Mongoose",
+  "description": "API REST de Spay Bienestar — Semana 07: Autenticación JWT",
   "main": "dist/server.js",
   "engines": {
     "node": ">=22.0.0"
@@ -13,15 +13,21 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "bcrypt": "5.1.1",
+    "cookie-parser": "1.4.7",
     "dotenv": "16.4.7",
     "express": "5.1.0",
+    "jsonwebtoken": "9.0.2",
     "mongoose": "8.16.0",
     "morgan": "1.10.0",
     "winston": "3.17.0",
     "zod": "3.25.67"
   },
   "devDependencies": {
+    "@types/bcrypt": "5.0.2",
+    "@types/cookie-parser": "1.4.8",
     "@types/express": "5.0.3",
+    "@types/jsonwebtoken": "9.0.9",
     "@types/morgan": "1.9.10",
     "@types/node": "22.15.21",
     "tsx": "4.19.4",

@@ -1,5 +1,3 @@
-// src/models/treatment.model.ts — Entidad principal (referencia a Category)
-
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface ITreatment extends Document {
@@ -9,6 +7,7 @@ export interface ITreatment extends Document {
   duration: number;
   available: boolean;
   category: Types.ObjectId;
+  createdBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +46,10 @@ const treatmentSchema = new Schema<ITreatment>(
       type: Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'La categoría es obligatoria'],
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
     },
   },
   { timestamps: true },

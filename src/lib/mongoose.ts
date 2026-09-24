@@ -1,5 +1,3 @@
-// src/lib/mongoose.ts — Conexión a MongoDB
-
 import mongoose from 'mongoose';
 import { logger } from '../config/logger.js';
 
@@ -16,6 +14,11 @@ export async function connectDB(): Promise<void> {
     logger.error('❌ Error al conectar con MongoDB', err);
     process.exit(1);
   }
+}
+
+export async function disconnectDB(): Promise<void> {
+  await mongoose.disconnect();
+  logger.info('MongoDB desconectado');
 }
 
 mongoose.connection.on('disconnected', () => {

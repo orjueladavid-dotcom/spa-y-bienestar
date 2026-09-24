@@ -1,5 +1,3 @@
-// src/services/treatment.service.ts — Lógica de negocio Treatment
-
 import * as treatmentRepo from '../repositories/treatment.repository.js';
 import * as categoryRepo from '../repositories/category.repository.js';
 import { AppError } from '../errors/AppError.js';
@@ -17,13 +15,12 @@ export async function getById(id: string) {
   return treatment;
 }
 
-export async function create(data: CreateTreatmentDto) {
-  // Verificar que la categoría exista
+export async function create(data: CreateTreatmentDto, userId: string) {
   const category = await categoryRepo.findById(data.category);
   if (!category) {
     throw new AppError(400, 'La categoría indicada no existe');
   }
-  return treatmentRepo.create(data);
+  return treatmentRepo.create({ ...data, createdBy: userId });
 }
 
 export async function update(id: string, data: UpdateTreatmentDto) {

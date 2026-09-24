@@ -1,5 +1,3 @@
-// src/services/category.service.ts — Lógica de negocio Category
-
 import * as categoryRepo from '../repositories/category.repository.js';
 import { AppError } from '../errors/AppError.js';
 import type { CreateCategoryDto, UpdateCategoryDto } from '../schemas/category.schema.js';

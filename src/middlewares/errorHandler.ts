@@ -1,6 +1,3 @@
-// src/middlewares/errorHandler.ts — Manejo centralizado de errores
-// Express reconoce un error handler solo si tiene exactamente 4 parámetros.
-
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../errors/AppError.js';

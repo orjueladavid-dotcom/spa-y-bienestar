@@ -1,5 +1,3 @@
-// src/repositories/category.repository.ts — Acceso a datos Category
-
 import { Category } from '../models/category.model.js';
 import { AppError } from '../errors/AppError.js';
 import type { CreateCategoryDto, UpdateCategoryDto } from '../schemas/category.schema.js';
@@ -20,8 +18,7 @@ export async function findAll() {
 
 export async function findById(id: string) {
   try {
-    const category = await Category.findById(id).lean();
-    return category;
+    return await Category.findById(id).lean();
   } catch (err) {
     return mapMongoError(err);
   }
@@ -38,11 +35,10 @@ export async function create(data: CreateCategoryDto) {
 
 export async function update(id: string, data: UpdateCategoryDto) {
   try {
-    const category = await Category.findByIdAndUpdate(id, data, {
+    return await Category.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     }).lean();
-    return category;
   } catch (err) {
     return mapMongoError(err);
   }
